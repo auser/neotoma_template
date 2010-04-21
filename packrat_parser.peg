@@ -1,0 +1,33 @@
+config_element <- ws? elem_list? ws? ~;
+elem_list <- head:elem tail:(ws? elem)* `
+  case Node of
+    [] -> [];
+    [""] -> [];
+    _ ->
+      Head = proplists:get_value(head, Node),
+      Tail = [R || [_,R] <- proplists:get_value(tail, Node)],
+      [Head|Tail]
+  end
+`;
+
+elem <- hook_elem / action_elem ~;
+
+hook_elem <- action '.' ("before" / "after") ':' [ \t]* string crlf `
+  {lists:nth(1, Node), 
+    {erlang:list_to_atom(lists:nth(3, Node)), 
+      lists:flatten(lists:nth(6, Node))
+    }
+  }
+`;
+action_elem <- action ':' [ \t]* string crlf `
+  {lists:nth(1, Node), lists:flatten(lists:nth(4, Node))}
+`;
+
+action <- "bundle" / "mount" / "run" / "unmount" / "cleanup" `erlang:list_to_atom(lists:flatten(Node))`;
+
+ws <- (comment / space)* `{comment_block, lists:flatten(Node)}`;
+% Atoms
+string <- (!crlf .)* ~;
+comment <- '#' (!crlf .)* crlf ~;
+space <- [ \t\n\s\r] ~;
+crlf <- "\r\n" / "\n" ~;
