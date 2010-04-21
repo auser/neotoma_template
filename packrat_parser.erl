@@ -5,6 +5,7 @@
 
 
 
+
 file(Filename) -> {ok, Bin} = file:read_file(Filename), parse(binary_to_list(Bin)).
 
 parse(Input) ->
@@ -31,7 +32,9 @@ parse(Input) ->
  end).
 
 'elem'(Input, Index) ->
-  p(Input, Index, 'elem', fun(I,D) -> (p_choose([fun 'hook_elem'/2, fun 'action_elem'/2]))(I,D) end, fun(Node, Idx) -> Node end).
+  p(Input, Index, 'elem', fun(I,D) -> (p_choose([fun 'hook_elem'/2, fun 'action_elem'/2]))(I,D) end, fun(Node, Idx) -> 
+  erlang:display(Node)
+ end).
 
 'hook_elem'(Input, Index) ->
   p(Input, Index, 'hook_elem', fun(I,D) -> (p_seq([fun 'action'/2, p_string("."), p_choose([p_string("before"), p_string("after")]), p_string(":"), p_zero_or_more(p_charclass("[ \t]")), fun 'string'/2, fun 'crlf'/2]))(I,D) end, fun(Node, Idx) -> 

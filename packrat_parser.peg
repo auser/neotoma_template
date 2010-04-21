@@ -10,7 +10,9 @@ elem_list <- head:elem tail:(ws? elem)* `
   end
 `;
 
-elem <- hook_elem / action_elem ~;
+elem <- hook_elem / action_elem `
+  erlang:display(Node)
+`;
 
 hook_elem <- action '.' ("before" / "after") ':' [ \t]* string crlf `
   {lists:nth(1, Node), 
@@ -31,3 +33,7 @@ string <- (!crlf .)* ~;
 comment <- '#' (!crlf .)* crlf ~;
 space <- [ \t\n\s\r] ~;
 crlf <- "\r\n" / "\n" ~;
+
+%% Extra functions
+`
+`
