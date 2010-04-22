@@ -21,14 +21,11 @@ starting_test_() ->
 
 test_simple_parsing() ->
   Matches = [
-    % ["# comment line", [{comment, " comment line"}]],
-    % ["#\n", [{comment, ""}]],
     ["bundle: hello\n", [{bundle, {command, "hello"}}]],
     ["bundle: 'hello'\n", [{bundle, {command, "'hello'"}}]],
     ["bundle: \"hello\"\n", [{bundle, {command, "\"hello\""}}]],
     ["bundle.before: \"world\"\n", [{bundle, {pre, "\"world\""}}]],
     ["bundle.after: lickity\n", [{bundle, {post, "lickity"}}]]
-    % ["\n", {[], "\n"}]
   ],
   lists:map(fun([H|T]) ->
     ?assertEqual(hd(T), packrat_parser:parse(H))
@@ -37,5 +34,4 @@ test_simple_parsing() ->
 test_file_parsing() ->
   X = packrat_parser:file("config.conf"),
   Match = [{mount,{command,"echo \"mounting\""}},{bundle,[{command,"echo \"Bundle java stuff\""},{pre,"echo \"Before bundle\""},{post,"echo \"After bundle\""}]}],
-  erlang:display(X),
   ?assertEqual(Match, X).
