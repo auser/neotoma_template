@@ -13,9 +13,9 @@ elem_list <- head:elem tail:(ws? elem)* `
 
 elem <- hook_elem / action_elem ~;
 
-hook_elem <- action '.' ("before" / "after") ':' [ \t]* string crlf `
+hook_elem <- action '.' (bef / aft) ':' [ \t]* string crlf `
   {lists:nth(1, Node), 
-    {erlang:list_to_atom(lists:nth(3, Node)), lists:flatten(lists:nth(6, Node))}
+    {lists:nth(3, Node), lists:flatten(lists:nth(6, Node))}
   }
 `;
 action_elem <- action ':' [ \t]* string crlf `
@@ -28,6 +28,9 @@ action <- "bundle" / "mount" / "run" / "unmount" / "cleanup" `erlang:list_to_ato
 
 ws <- (comment / space)* `{}`;
 % Atoms
+bef <- "before" `pre`;
+aft <- "after" `post`;
+
 string <- (!crlf .)* ~;
 comment <- '#' (!crlf .)* crlf ~;
 space <- [ \t\n\s\r] ~;

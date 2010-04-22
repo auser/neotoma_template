@@ -35,9 +35,9 @@ parse(Input) ->
   p(Input, Index, 'elem', fun(I,D) -> (p_choose([fun 'hook_elem'/2, fun 'action_elem'/2]))(I,D) end, fun(Node, Idx) -> Node end).
 
 'hook_elem'(Input, Index) ->
-  p(Input, Index, 'hook_elem', fun(I,D) -> (p_seq([fun 'action'/2, p_string("."), p_choose([p_string("before"), p_string("after")]), p_string(":"), p_zero_or_more(p_charclass("[ \t]")), fun 'string'/2, fun 'crlf'/2]))(I,D) end, fun(Node, Idx) -> 
+  p(Input, Index, 'hook_elem', fun(I,D) -> (p_seq([fun 'action'/2, p_string("."), p_choose([fun 'bef'/2, fun 'aft'/2]), p_string(":"), p_zero_or_more(p_charclass("[ \t]")), fun 'string'/2, fun 'crlf'/2]))(I,D) end, fun(Node, Idx) -> 
   {lists:nth(1, Node), 
-    {erlang:list_to_atom(lists:nth(3, Node)), lists:flatten(lists:nth(6, Node))}
+    {lists:nth(3, Node), lists:flatten(lists:nth(6, Node))}
   }
  end).
 
@@ -53,6 +53,12 @@ parse(Input) ->
 
 'ws'(Input, Index) ->
   p(Input, Index, 'ws', fun(I,D) -> (p_zero_or_more(p_choose([fun 'comment'/2, fun 'space'/2])))(I,D) end, fun(Node, Idx) -> {} end).
+
+'bef'(Input, Index) ->
+  p(Input, Index, 'bef', fun(I,D) -> (p_string("before"))(I,D) end, fun(Node, Idx) -> pre end).
+
+'aft'(Input, Index) ->
+  p(Input, Index, 'aft', fun(I,D) -> (p_string("after"))(I,D) end, fun(Node, Idx) -> post end).
 
 'string'(Input, Index) ->
   p(Input, Index, 'string', fun(I,D) -> (p_zero_or_more(p_seq([p_not(fun 'crlf'/2), p_anything()])))(I,D) end, fun(Node, Idx) -> Node end).

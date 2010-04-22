@@ -13,7 +13,7 @@ starting_test_() ->
       fun setup/0,
       fun teardown/1,
       [
-        % fun test_simple_parsing/0,
+        fun test_simple_parsing/0,
         fun test_file_parsing/0
       ]
     }
@@ -21,8 +21,8 @@ starting_test_() ->
 
 test_simple_parsing() ->
   Matches = [
-    ["# comment line\n", [{comment, " comment line"}]],
-    ["#\n", [{comment, ""}]],
+    % ["# comment line", [{comment, " comment line"}]],
+    % ["#\n", [{comment, ""}]],
     ["bundle: hello\n", [{bundle, {command, "hello"}}]],
     ["bundle: 'hello'\n", [{bundle, {command, "'hello'"}}]],
     ["bundle: \"hello\"\n", [{bundle, {command, "\"hello\""}}]],
@@ -36,5 +36,6 @@ test_simple_parsing() ->
 
 test_file_parsing() ->
   X = packrat_parser:file("config.conf"),
+  Match = [{mount,{command,"echo \"mounting\""}},{bundle,[{command,"echo \"Bundle java stuff\""},{pre,"echo \"Before bundle\""},{post,"echo \"After bundle\""}]}],
   erlang:display(X),
-  X.
+  ?assertEqual(Match, X).
