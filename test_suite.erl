@@ -4,5 +4,6 @@
  
 all_test_() ->
   [
-    {module, packrat_parser_test}
+    {module, packrat_parser_test},
+    {module, test_plist_helper}
   ].

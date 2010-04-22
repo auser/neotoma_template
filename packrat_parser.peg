@@ -1,4 +1,5 @@
-config_element <- ws? elem_list? ws? ~;
+config_element <- ws? elem_list ws? `plist_helper:merge_proplists(Node)`;
+
 elem_list <- head:elem tail:(ws? elem)* `
   case Node of
     [] -> [];
@@ -10,24 +11,22 @@ elem_list <- head:elem tail:(ws? elem)* `
   end
 `;
 
-elem <- hook_elem / action_elem `
-  erlang:display(Node)
-`;
+elem <- hook_elem / action_elem ~;
 
 hook_elem <- action '.' ("before" / "after") ':' [ \t]* string crlf `
   {lists:nth(1, Node), 
-    {erlang:list_to_atom(lists:nth(3, Node)), 
-      lists:flatten(lists:nth(6, Node))
-    }
+    {erlang:list_to_atom(lists:nth(3, Node)), lists:flatten(lists:nth(6, Node))}
   }
 `;
 action_elem <- action ':' [ \t]* string crlf `
-  {lists:nth(1, Node), lists:flatten(lists:nth(4, Node))}
+  {lists:nth(1, Node), 
+    {command, lists:flatten(lists:nth(4, Node))}
+  }
 `;
 
 action <- "bundle" / "mount" / "run" / "unmount" / "cleanup" `erlang:list_to_atom(lists:flatten(Node))`;
 
-ws <- (comment / space)* `{comment_block, lists:flatten(Node)}`;
+ws <- (comment / space)* `{}`;
 % Atoms
 string <- (!crlf .)* ~;
 comment <- '#' (!crlf .)* crlf ~;

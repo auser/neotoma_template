@@ -17,7 +17,7 @@ parse(Input) ->
   release_memo(), Result.
 
 'config_element'(Input, Index) ->
-  p(Input, Index, 'config_element', fun(I,D) -> (p_seq([p_optional(fun 'ws'/2), p_optional(fun 'elem_list'/2), p_optional(fun 'ws'/2)]))(I,D) end, fun(Node, Idx) -> Node end).
+  p(Input, Index, 'config_element', fun(I,D) -> (p_seq([p_optional(fun 'ws'/2), fun 'elem_list'/2, p_optional(fun 'ws'/2)]))(I,D) end, fun(Node, Idx) -> plist_helper:merge_proplists(Node) end).
 
 'elem_list'(Input, Index) ->
   p(Input, Index, 'elem_list', fun(I,D) -> (p_seq([p_label('head', fun 'elem'/2), p_label('tail', p_zero_or_more(p_seq([p_optional(fun 'ws'/2), fun 'elem'/2])))]))(I,D) end, fun(Node, Idx) -> 
@@ -32,29 +32,27 @@ parse(Input) ->
  end).
 
 'elem'(Input, Index) ->
-  p(Input, Index, 'elem', fun(I,D) -> (p_choose([fun 'hook_elem'/2, fun 'action_elem'/2]))(I,D) end, fun(Node, Idx) -> 
-  erlang:display(Node)
- end).
+  p(Input, Index, 'elem', fun(I,D) -> (p_choose([fun 'hook_elem'/2, fun 'action_elem'/2]))(I,D) end, fun(Node, Idx) -> Node end).
 
 'hook_elem'(Input, Index) ->
   p(Input, Index, 'hook_elem', fun(I,D) -> (p_seq([fun 'action'/2, p_string("."), p_choose([p_string("before"), p_string("after")]), p_string(":"), p_zero_or_more(p_charclass("[ \t]")), fun 'string'/2, fun 'crlf'/2]))(I,D) end, fun(Node, Idx) -> 
   {lists:nth(1, Node), 
-    {erlang:list_to_atom(lists:nth(3, Node)), 
-      lists:flatten(lists:nth(6, Node))
-    }
+    {erlang:list_to_atom(lists:nth(3, Node)), lists:flatten(lists:nth(6, Node))}
   }
  end).
 
 'action_elem'(Input, Index) ->
   p(Input, Index, 'action_elem', fun(I,D) -> (p_seq([fun 'action'/2, p_string(":"), p_zero_or_more(p_charclass("[ \t]")), fun 'string'/2, fun 'crlf'/2]))(I,D) end, fun(Node, Idx) -> 
-  {lists:nth(1, Node), lists:flatten(lists:nth(4, Node))}
+  {lists:nth(1, Node), 
+    {command, lists:flatten(lists:nth(4, Node))}
+  }
  end).
 
 'action'(Input, Index) ->
   p(Input, Index, 'action', fun(I,D) -> (p_choose([p_string("bundle"), p_string("mount"), p_string("run"), p_string("unmount"), p_string("cleanup")]))(I,D) end, fun(Node, Idx) -> erlang:list_to_atom(lists:flatten(Node)) end).
 
 'ws'(Input, Index) ->
-  p(Input, Index, 'ws', fun(I,D) -> (p_zero_or_more(p_choose([fun 'comment'/2, fun 'space'/2])))(I,D) end, fun(Node, Idx) -> {comment_block, lists:flatten(Node)} end).
+  p(Input, Index, 'ws', fun(I,D) -> (p_zero_or_more(p_choose([fun 'comment'/2, fun 'space'/2])))(I,D) end, fun(Node, Idx) -> {} end).
 
 'string'(Input, Index) ->
   p(Input, Index, 'string', fun(I,D) -> (p_zero_or_more(p_seq([p_not(fun 'crlf'/2), p_anything()])))(I,D) end, fun(Node, Idx) -> Node end).
