@@ -1,16 +1,49 @@
+EBIN_DIR := ./ebin
+ERL = erl
+ERLC = erlc
 
-all: tests
-	erlc plist_helper.erl
-	erlc config.erl
+ERL_SOURCE_DIRS = \
+	./src
+
+TEST_DIRS = \
+	./test
 	
-tests:
-	erlc packrat_parser_test.erl
-	erlc test_suite.erl
-	erlc test_plist_helper.erl
+#Helper Functions
+get_src_from_dir  = $(wildcard $1/*.erl)
+get_src_from_dir_list = $(foreach dir, $1, $(call get_src_from_dir,$(dir)))				        
+src_to_beam = $(subst ./src, ./ebin, $(subst .erl,.beam,$1))
+# src_to_beam = $(subst .erl,.beam,$1)
 
-peg: all neotoma packrat_parser.peg tests
-	erl -pa ./priv/neotoma/ebin -noshell -run neotoma file packrat_parser.peg -s init stop
-	erlc packrat_parser.erl
+SRC = $(call get_src_from_dir_list, $(ERL_SOURCE_DIRS))
+OBJ = $(call src_to_beam,$(SRC))
+STUFF_TO_CLEAN += $(OBJ)
+
+TEST_SRC = $(call get_src_from_dir_list, $(TEST_DIRS))
+TEST_OBJ = $(call src_to_beam,$(TEST_SRC))
+STUFF_TO_CLEAN += $(TEST_OBJ)
+
+all: peg $(OBJ)
+
+peg: neotoma
+	$(ERL) -pa ./priv/neotoma/ebin -noshell -run neotoma file $@ -s init stop
+	
+$(OBJ): $(SRC)
+	$(SILENCE)echo compiling $(notdir $@)
+	$(SILENCE)$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $^
+
+$(TEST_OBJ): $(TEST_SRC)
+	$(SILENCE)echo compiling $(notdir $@)
+	$(SILENCE)$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $^	
+
+test: all $(TEST_OBJ)
+	$(SILENCE) $(ERL)	-noshell \
+					-sname local_test \
+					-pa $(EBIN_DIR) \
+					-s test_suite test \
+					-s init stop
 
 neotoma:
 	@(cd priv/neotoma; $(MAKE))	
+
+clean:
+	@(rm -rf $(STUFF_TO_CLEAN))
