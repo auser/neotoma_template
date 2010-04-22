@@ -1,6 +1,7 @@
 EBIN_DIR := ./ebin
 ERL = erl
 ERLC = erlc
+SILENCE = @
 
 ERL_SOURCE_DIRS = \
 	./src
@@ -22,10 +23,12 @@ TEST_SRC = $(call get_src_from_dir_list, $(TEST_DIRS))
 TEST_OBJ = $(call src_to_beam,$(TEST_SRC))
 STUFF_TO_CLEAN += $(TEST_OBJ)
 
+STUFF_TO_CLEAN += ./priv/neotoma/ebin/*.beam
+
 all: peg $(OBJ)
 
 peg: neotoma
-	$(ERL) -pa ./priv/neotoma/ebin -noshell -run neotoma file $@ -s init stop
+	$(ERL) -pa ./priv/neotoma/ebin -noshell -run neotoma file src/packrat_parser.peg -s init stop
 	
 $(OBJ): $(SRC)
 	$(SILENCE)echo compiling $(notdir $@)
