@@ -49,4 +49,4 @@ neotoma:
 	@(cd priv/neotoma; $(MAKE))	
 
 clean:
-	@(rm -rf $(STUFF_TO_CLEAN))
+	@(rm -rf $(STUFF_TO_CLEAN) $(EBIN_DIR)/*.beam)
