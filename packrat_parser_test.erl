@@ -33,5 +33,5 @@ test_simple_parsing() ->
 
 test_file_parsing() ->
   X = packrat_parser:file("config.conf"),
-  Match = [{mount,{command,"echo \"mounting\""}},{bundle,[{command,"echo \"Bundle java stuff\""},{pre,"echo \"Before bundle\""},{post,"echo \"After bundle\""}]}],
+  Match = [{mount,{command,"\n  echo \"mounting\"\n"}},{bundle,[{command,"echo \"Bundle java stuff\""},{pre,"echo \"Before bundle\""},{post,"echo \"After bundle\""}]}],
   ?assertEqual(Match, X).
